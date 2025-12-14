@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <title>แผนที่บ้านบักเจิด</title>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Leaflet CSS + JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <style>
+      #map {
+        height: 600px;
+      }
+      .leaflet-popup-content {
+        font-size: 16px;
+      }
+    </style>
+  </head>
+
+  <body class="bg-gray-100 p-6">
+    <h1 class="text-3xl font-bold mb-4 text-green-700">แผนที่บ้านบักเจิด</h1>
+
+    <!-- Form Input -->
+    <div class="bg-white p-4 rounded shadow mb-4">
+      <h2 class="text-xl font-semibold mb-3 text-gray-700">เพิ่มจุดข้อมูลใหม่</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <input id="place" class="border p-2 rounded" placeholder="ชื่อสถานที่ เช่น หอพัก" />
+        <input id="province" class="border p-2 rounded" placeholder="จังหวัด" />
+        <input id="date" class="border p-2 rounded" type="date" />
+        <input id="lat" class="border p-2 rounded" placeholder="ละติจูด" />
+        <input id="lon" class="border p-2 rounded" placeholder="ลองจิจูด" />
+      </div>
+
+      <button
+        onclick="addLocation()"
+        class="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+      >
+        เพิ่มจุด
+      </button>
+    </div>
+
+    <!-- Map -->
+    <div id="map" class="rounded shadow"></div>
+
+    <script>
+      // =============================
+      // 1. สร้างแผนที่พื้นฐาน (Northern Thailand)
+      // =============================
+      const map = L.map('map').setView([18.9, 99.0], 15)
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap',
+      }).addTo(map)
+
+      const greenIcon = L.icon({
+        iconUrl: 'https://cdn-icons-png.flaticon.com/512/854/854878.png',
+        iconSize: [35, 35],
+      })
+
+      let markers = []
+
+      const geocodeCache = JSON.parse(localStorage.getItem('geocodeCache') || '{}')
+
+      function addMarker(lat, lon, popupText) {
+        const marker = L.marker([lat, lon], { icon: greenIcon }).addTo(map)
+        marker.bindPopup(popupText)
+        markers.push(marker)
+
+        if (markers.length > 1) {
+          const group = L.featureGroup(markers)
+          map.fitBounds(group.getBounds(), { padding: [20, 20] })
+        } else {
+          map.setView([lat, lon], 17)
+        }
+      }
+
+      async function geocodeAddress(query) {
+        if (geocodeCache[query]) return geocodeCache[query]
+
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          query,
+        )}`
+        const response = await fetch(url)
+        const data = await response.json()
+
+        if (!data || data.length === 0) return null
+
+        const result = { lat: data[0].lat, lon: data[0].lon }
+
+        geocodeCache[query] = result
+        localStorage.setItem('geocodeCache', JSON.stringify(geocodeCache))
+
+        return result
+      }
+
+      async function addLocation() {
+        const place = document.getElementById('place').value
+        const province = document.getElementById('province').value
+        const date = document.getElementById('date').value
+        let lat = document.getElementById('lat').value
+        let lon = document.getElementById('lon').value
+
+        if (!place || !province || !date) {
+          alert('กรุณากรอกข้อมูลให้ครบ')
+          return
+        }
+
+        let popupText = `${place} - ${province} | วันที่ ${date}`
+
+        if (!lat || !lon) {
+          const query = `${place}, ${province}, Thailand`
+          const geo = await geocodeAddress(query)
+
+          if (!geo) {
+            alert('ไม่พบพิกัดของสถานที่นี้')
+            return
+          }
+
+          lat = geo.lat
+          lon = geo.lon
+        }
+
+        addMarker(lat, lon, popupText)
+      }
+
+      // =============================
+      // 5. จุดเริ่มต้นจาก Google Maps
+      // =============================
+
+      // พิกัดจากลิงก์ Google Maps นิ่มซี่เส็งแมนชั่น
+      addMarker(18.8935559, 99.0090048, 'นิ่มซี่เส็งแมนชั่น | 66041013005 กิตติกร ชุ่มรัศมี')
+    </script>
+  </body>
+</html>
