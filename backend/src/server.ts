@@ -26,7 +26,7 @@ if (!fs.existsSync(logsDir)) {
 }
 
 // (optional) endpoint เดิมจาก Lab 1.2 ถ้าอยากเก็บไว้ demo logging
-app.get('/api/demo', (req, res) => {
+app.get('/api/demo', (req: any, res: any) => {
   const logMessage = `Request at ${new Date().toISOString()}: ${req.ip}\n`;
   fs.appendFileSync(path.join(logsDir, 'access.log'), logMessage);
 
@@ -45,7 +45,7 @@ app.get('/api/demo', (req, res) => {
 });
 
 // Health check root
-app.get('/', (_req, res) => {
+app.get('/', (_req: any, res: any) => {
   res.json({
     message: 'API พร้อมใช้งาน (Supabase + Prisma + Quasar Frontend)',
     timestamp: new Date().toISOString(),
@@ -56,7 +56,7 @@ app.get('/', (_req, res) => {
 app.use('/api/tasks', taskRoutes);
 
 // 404 handler — ห้ามใช้ '*' กับ Express เวอร์ชันใหม่
-app.use((req, res) => {
+app.use((req: any, res: any) => {
   res.status(404).json({
     message: 'ไม่พบเส้นทาง',
     path: req.originalUrl,

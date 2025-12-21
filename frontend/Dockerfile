@@ -11,9 +11,9 @@ RUN npm install -g @quasar/cli
 # ปิด postinstall (quasar prepare)
 ENV npm_config_lifecycle_script=""
 
-# รับค่า VITE_API_URL จาก build args
-ARG VITE_API_URL
-ENV VITE_API_URL=$VITE_API_URL
+# รับค่า API_URL จาก build args
+ARG API_URL
+ENV API_URL=$API_URL
 
 # Copy package files
 COPY package*.json ./
@@ -37,6 +37,7 @@ RUN npm run build
 FROM nginx:1.27-alpine
 
 COPY --from=builder /app/dist/spa /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/nginx.conf
 
 EXPOSE 80
 

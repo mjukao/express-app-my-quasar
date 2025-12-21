@@ -5,7 +5,7 @@ import { prisma } from '../prisma';
 const router = Router();
 
 // CREATE
-router.post('/', async (req, res) => {
+router.post('/', async (req: any, res: any) => {
   try {
     const { title, description } = req.body;
     if (!title) {
@@ -24,7 +24,7 @@ router.post('/', async (req, res) => {
 });
 
 // READ ALL
-router.get('/', async (_req, res) => {
+router.get('/', async (_req: any, res: any) => {
   try {
     const tasks = await prisma.task.findMany({
       orderBy: { createdAt: 'desc' },
@@ -38,7 +38,7 @@ router.get('/', async (_req, res) => {
 });
 
 // READ ONE
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req: any, res: any) => {
   try {
     const task = await prisma.task.findUnique({
       where: { id: req.params.id },
@@ -56,7 +56,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // UPDATE (PATCH)
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', async (req: any, res: any) => {
   try {
     const { title, description } = req.body;
 
@@ -81,7 +81,7 @@ router.patch('/:id', async (req, res) => {
 });
 
 // DELETE
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', async (req: any, res: any) => {
   try {
     await prisma.task.delete({
       where: { id: req.params.id },
